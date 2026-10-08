@@ -1,0 +1,6 @@
+# Khai báo 1 dịch vụ web duy nhất chạy Nginx (Bài 5, Session 09)
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8082:80"   # cổng máy chủ 8082 -> cổng container 80

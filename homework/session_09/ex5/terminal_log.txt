@@ -1,0 +1,297 @@
+$ docker version --format '{{.Client.Version}} / {{.Server.Version}}'
+29.7.2 / 29.7.2
+
+$ docker compose version
+Docker Compose version v5.5.0
+
+$ cat docker-compose.yml
+# Khai báo 1 dịch vụ web duy nhất chạy Nginx (Bài 5, Session 09)
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8082:80"   # cổng máy chủ 8082 -> cổng container 80
+
+$ LC_ALL=C.UTF-8 grep -nP "\t" docker-compose.yml; echo "exit=${PIPESTATUS[0]}"
+exit=1
+
+$ docker compose config
+name: compose-web
+services:
+  web:
+    image: nginx:alpine
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "8082"
+        protocol: tcp
+networks:
+  default:
+    name: compose-web_default
+
+$ docker compose --progress plain up -d
+ Image nginx:alpine Pulling 
+ Image nginx:alpine Pulled 
+ Network compose-web_default Creating 
+ Network compose-web_default Creating 
+ Network compose-web_default Created 
+ Network compose-web_default Created 
+ Container compose-web-web-1 Creating 
+ Container compose-web-web-1 Created 
+ Container compose-web-web-1 Starting 
+ Container compose-web-web-1 Started 
+
+$ docker compose ps
+NAME                IMAGE          COMMAND                  SERVICE   CREATED         STATUS                  PORTS
+compose-web-web-1   nginx:alpine   "/docker-entrypoint.…"   web       2 seconds ago   Up Less than a second   0.0.0.0:8082->80/tcp, [::]:8082->80/tcp
+
+$ docker compose ps --format json
+{"Command":"\"/docker-entrypoint.…\"","CreatedAt":"2026-10-08 23:49:58 +0700 +07","Engine":"","ExitCode":0,"Health":"","ID":"4b91d372f0bc","Image":"nginx:alpine","Labels":"desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/80/tcp=:8082,com.docker.compose.config-hash=a5eb0d5dd3b478c4c34cf9350385da6763c6c9a016beb41635228c0b988b9f0b,com.docker.compose.container-number=1,com.docker.compose.image=sha256:0530961ff0592b58c10f767535cc0abdfccf9e389ff7cc90f87320c1bc7e8506,com.docker.compose.service=web,com.docker.compose.version=5.5.0,maintainer=NGINX Docker Maintainers \u003cdocker-maint@nginx.com\u003e,com.docker.compose.depends_on=,com.docker.compose.oneoff=False,com.docker.compose.project=compose-web,com.docker.compose.project.config_files=D:\\Rikkei\\DevOps\\Session9\\_demo\\bai5\\compose-web\\docker-compose.yml,com.docker.compose.project.working_dir=D:\\Rikkei\\DevOps\\Session9\\_demo\\bai5\\compose-web","LocalVolumes":"0","Mounts":"","Name":"compose-web-web-1","Names":"compose-web-web-1","Networks":"compose-web_default","Ports":"0.0.0.0:8082-\u003e80/tcp, [::]:8082-\u003e80/tcp","Project":"compose-web","Publishers":[{"URL":"0.0.0.0","TargetPort":80,"PublishedPort":8082,"Protocol":"tcp"},{"URL":"::","TargetPort":80,"PublishedPort":8082,"Protocol":"tcp"}],"RunningFor":"2 seconds ago","Service":"web","Size":"0B","State":"running","Status":"Up 1 second"}
+
+$ docker ps --filter name=compose-web
+CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS        PORTS                                     NAMES
+4b91d372f0bc   nginx:alpine   "/docker-entrypoint.…"   3 seconds ago   Up 1 second   0.0.0.0:8082->80/tcp, [::]:8082->80/tcp   compose-web-web-1
+
+$ docker compose logs web
+web-1  | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+web-1  | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+web-1  | 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+web-1  | 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+web-1  | /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+web-1  | /docker-entrypoint.sh: Configuration complete; ready for start up
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: using the "epoll" event method
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: nginx/1.31.6
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0) 
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: OS: Linux 6.6.87.2-microsoft-standard-WSL2
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker processes
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 30
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 31
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 32
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 33
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 34
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 35
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 36
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 37
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 38
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 39
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 40
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 41
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 42
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 43
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 44
+web-1  | 2026/10/08 16:49:59 [notice] 1#1: start worker process 45
+
+$ docker network ls --filter name=compose-web
+NETWORK ID     NAME                  DRIVER    SCOPE
+4665605c0e42   compose-web_default   bridge    local
+
+$ curl http://localhost:8082
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   896  100   896    0     0   225k      0 --:--:-- --:--:-- --:--:--  291k<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, nginx is successfully installed and working.
+Further configuration is required for the web server, reverse proxy, 
+API gateway, load balancer, content cache, or other features.</p>
+
+<p>For online documentation and support please refer to
+<a href="https://nginx.org/">nginx.org</a>.<br/>
+To engage with the community please visit
+<a href="https://community.nginx.org/">community.nginx.org</a>.<br/>
+For enterprise grade support, professional services, additional 
+security features and capabilities please refer to
+<a href="https://f5.com/nginx">f5.com/nginx</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+
+$ curl -I http://localhost:8082
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0   896    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0HTTP/1.1 200 OK
+Server: nginx/1.31.6
+Date: Thu, 08 Oct 2026 16:50:09 GMT
+Content-Type: text/html
+Content-Length: 896
+Last-Modified: Tue, 15 Sep 2026 14:18:52 GMT
+Connection: keep-alive
+ETag: "6aa953cc-380"
+Accept-Ranges: bytes
+
+
+
+$ curl -s http://localhost:8082 | grep -o "<title>.*</title>"
+<title>Welcome to nginx!</title>
+
+$ docker compose stop
+ Container compose-web-web-1 Stopping 
+ Container compose-web-web-1 Stopped 
+
+$ docker compose ps -a
+NAME                IMAGE          COMMAND                  SERVICE   CREATED          STATUS                              PORTS
+compose-web-web-1   nginx:alpine   "/docker-entrypoint.…"   web       13 seconds ago   Exited (0) Less than a second ago   
+
+$ docker compose start
+ Container compose-web-web-1 Starting 
+ Container compose-web-web-1 Started 
+
+$ docker compose ps
+NAME                IMAGE          COMMAND                  SERVICE   CREATED          STATUS        PORTS
+compose-web-web-1   nginx:alpine   "/docker-entrypoint.…"   web       15 seconds ago   Up 1 second   0.0.0.0:8082->80/tcp, [::]:8082->80/tcp
+
+$ docker compose restart
+ Container compose-web-web-1 Restarting 
+ Container compose-web-web-1 Started 
+
+$ docker compose top
+SERVICE  #   UID    PID   PPID  C   STIME  TTY  TIME      CMD
+web      1   root   1045  1022  5   16:50  ?    00:00:00  nginx: master process nginx -g daemon off;
+web      1   statd  1091  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1092  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1093  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1094  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1095  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1096  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1097  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1098  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1099  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1100  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1101  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1102  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1103  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1104  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1105  1045  0   16:50  ?    00:00:00  nginx: worker process
+web      1   statd  1106  1045  0   16:50  ?    00:00:00  nginx: worker process
+
+$ docker compose exec web nginx -v
+nginx version: nginx/1.31.6
+
+$ docker compose exec web cat /etc/nginx/conf.d/default.conf | head -12
+cat: can't open 'C:/Program Files/Git/etc/nginx/conf.d/default.conf': No such file or directory
+
+$ curl -s -o /dev/null -w 'HTTP %{http_code}\n' http://localhost:8082
+HTTP 200
+
+$ docker images nginx:alpine
+IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
+nginx:alpine   df221db836e1       94.4MB         27.2MB   U    
+
+$ docker compose down
+ Container compose-web-web-1 Stopping 
+ Container compose-web-web-1 Stopped 
+ Container compose-web-web-1 Removing 
+ Container compose-web-web-1 Removed 
+ Network compose-web_default Removing 
+ Network compose-web_default Removed 
+
+$ docker compose ps
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+
+$ docker ps -a --filter name=compose-web
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+$ docker network ls --filter name=compose-web
+NETWORK ID   NAME      DRIVER    SCOPE
+
+$ docker images nginx:alpine
+IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
+nginx:alpine   df221db836e1       94.4MB         27.2MB        
+
+=== CHẠY BỔ SUNG: Git Bash tự đổi /etc/... thành C:/Program Files/Git/etc/..., nên chạy lại với MSYS_NO_PATHCONV=1; curl dùng -s để bỏ bảng tiến trình ===
+
+$ docker compose --progress plain up -d
+ Network compose-web_default Creating 
+ Network compose-web_default Creating 
+ Network compose-web_default Created 
+ Network compose-web_default Created 
+ Container compose-web-web-1 Creating 
+ Container compose-web-web-1 Created 
+ Container compose-web-web-1 Starting 
+ Container compose-web-web-1 Started 
+
+$ docker compose ps
+NAME                IMAGE          COMMAND                  SERVICE   CREATED                  STATUS                  PORTS
+compose-web-web-1   nginx:alpine   "/docker-entrypoint.…"   web       Less than a second ago   Up Less than a second   0.0.0.0:8082->80/tcp, [::]:8082->80/tcp
+
+$ curl -s http://localhost:8082
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, nginx is successfully installed and working.
+Further configuration is required for the web server, reverse proxy, 
+API gateway, load balancer, content cache, or other features.</p>
+
+<p>For online documentation and support please refer to
+<a href="https://nginx.org/">nginx.org</a>.<br/>
+To engage with the community please visit
+<a href="https://community.nginx.org/">community.nginx.org</a>.<br/>
+For enterprise grade support, professional services, additional 
+security features and capabilities please refer to
+<a href="https://f5.com/nginx">f5.com/nginx</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+$ MSYS_NO_PATHCONV=1 docker compose exec web cat /etc/nginx/conf.d/default.conf | head -12
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+
+$ docker compose down
+ Container compose-web-web-1 Stopping 
+ Container compose-web-web-1 Stopped 
+ Container compose-web-web-1 Removing 
+ Container compose-web-web-1 Removed 
+ Network compose-web_default Removing 
+ Network compose-web_default Removed 
+
+$ docker compose ps
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+
+$ docker ps -a --filter name=compose-web
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+$ docker network ls --filter name=compose-web
+NETWORK ID   NAME      DRIVER    SCOPE
+
+$ docker images nginx:alpine
+IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
+nginx:alpine   df221db836e1       94.4MB         27.2MB        
+
